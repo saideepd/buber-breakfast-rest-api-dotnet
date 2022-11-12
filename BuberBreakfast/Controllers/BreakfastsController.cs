@@ -1,5 +1,6 @@
 using BuberBreakfast.Contracts.Breakfast;
 using BuberBreakfast.Models;
+using BuberBreakfast.Services.Breakfasts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BuberBreakfast.Controllers;
@@ -8,11 +9,18 @@ namespace BuberBreakfast.Controllers;
 [Route("[controller]")]
 public class BreakfastsController : ControllerBase
 {
+    private readonly IBreakfastService _breakfastService;
+
+    public BreakfastsController(IBreakfastService breakfastService)
+    {
+        _breakfastService = breakfastService;
+    }
+
     [HttpPost]
     public IActionResult CreateBreakfast(CreateBreakfastRequest request)
     {
         var breakfast = new Breakfast(
-            new Guid(),
+            Guid.NewGuid(),
             request.Name,
             request.Description,
             request.StartDateTime,
@@ -22,7 +30,7 @@ public class BreakfastsController : ControllerBase
             request.Sweet
         );
 
-        // TODO: save breakfast to database
+        _breakfastService.CreateBreakfast(breakfast);
 
         var response = new BreakfastResponse(
             breakfast.Id,
@@ -36,15 +44,28 @@ public class BreakfastsController : ControllerBase
         );
 
         return CreatedAtAction(
-            actionName: nameof(breakfast),
+            actionName: nameof(GetBreakfast),
             routeValues: new { id = breakfast.Id },
-            value: request);
+            value: response);
     }
 
     [HttpGet("{id:guid}")]
     public IActionResult GetBreakfast(Guid id)
     {
-        return Ok(id);
+        Breakfast breakfast = _breakfastService.GetBreakfast(id);
+
+        var response = new BreakfastResponse (
+            breakfast.Id,
+            breakfast.Name,
+            breakfast.Description,
+            breakfast.StartDateTime,
+            breakfast.EndDateTime,
+            breakfast.LastModifiedDateTime,
+            breakfast.Savory,
+            breakfast.Sweet
+        );
+        
+        return Ok(response);
     }
 
     [HttpPut("{id:guid}")]
