@@ -1,7 +1,7 @@
 namespace BuberBreakfast.Contracts.Breakfast;
 
 public record BreakfastResponse(
-    Guid id,
+    Guid Id,
     string Name,
     string Description,
     DateTime StartDateTime,
